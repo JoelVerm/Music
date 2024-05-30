@@ -13,7 +13,7 @@ val SearchScreen = NavScreen("Search", Icons.Rounded.Search, 0) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("${it.name} with text: ${it.prop}")
-        Button(onClick = { it.nav(HomeScreen("Pancakes")) }) {
+        Button(onClick = { it.nav(HomeScreen(Pair("Pancakes", "Sugar"))) }) {
             Text("Click me")
         }
     }

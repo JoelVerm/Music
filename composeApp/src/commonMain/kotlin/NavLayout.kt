@@ -1,3 +1,11 @@
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -8,25 +16,36 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import kotlin.reflect.KProperty
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun NavLayout(items: List<NavScreen<*>>) {
-    var selectedItem by remember { mutableStateOf(items.first().name) }
-    items.forEach { it.nav = { screen -> selectedItem = screen.name } }
+    var selectedItem by remember { mutableStateOf(0) }
+    val slideItem by animateFloatAsState(selectedItem.toFloat() * -windowWidth())
+    items.forEach { it.nav = { screen -> selectedItem = items.indexOf(screen) } }
     Scaffold(
         content = {
-            items.first { it.name == selectedItem }.apply { screen(this) }
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.width((windowWidth() * items.size).dp)
+                        .absoluteOffset(x = slideItem.dp)
+                ) {
+                    items.map { it.screen(it) }
+                }
+            }
         },
         bottomBar = {
             NavigationBar {
-                items.map {
+                items.withIndex().map {
                     NavigationBarItem(
-                        icon = { Icon(it.icon, it.name) },
-                        label = { Text(it.name) },
-                        onClick = { selectedItem = it.name },
-                        selected = selectedItem == it.name
+                        icon = { Icon(it.value.icon, it.value.name) },
+                        label = { Text(it.value.name) },
+                        onClick = { selectedItem = it.index },
+                        selected = selectedItem == it.index
                     )
                 }
             }
@@ -44,3 +63,6 @@ data class NavScreen<T>(val name: String, val icon: ImageVector, var prop: T, pr
         return this
     }
 }
+
+@Composable
+expect fun windowWidth(): Int
