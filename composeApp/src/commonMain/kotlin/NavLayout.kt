@@ -9,13 +9,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import kotlin.reflect.KProperty
 
 @Composable
-fun NavLayout(items: List<NavItem>) {
+fun NavLayout(items: List<NavScreen<*>>) {
     var selectedItem by remember { mutableStateOf(items.first().name) }
+    items.forEach { it.nav = { screen -> selectedItem = screen.name } }
     Scaffold(
         content = {
-            items.first { it.name == selectedItem }.screen()
+            items.first { it.name == selectedItem }.apply { screen(this) }
         },
         bottomBar = {
             NavigationBar {
@@ -32,4 +34,13 @@ fun NavLayout(items: List<NavItem>) {
     )
 }
 
-data class NavItem(val name: String, val icon: ImageVector, val screen: @Composable () -> Unit)
+data class NavScreen<T>(val name: String, val icon: ImageVector, var prop: T, private val _screen: @Composable (NavScreen<T>) -> Unit) where T: Any {
+    @Suppress("UNCHECKED_CAST")
+    val screen = @Composable { nav: NavScreen<*> -> (nav as? NavScreen<T>)?.let { _screen(this) } }
+
+    lateinit var nav: (NavScreen<*>) -> Unit
+    operator fun invoke(para : T): NavScreen<T> {
+        prop = para
+        return this
+    }
+}

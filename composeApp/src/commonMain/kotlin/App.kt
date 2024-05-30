@@ -19,9 +19,9 @@ fun App(
     ) {
         NavLayout(
             listOf(
-                NavItem("Home", Icons.Rounded.Home) { HomeScreen("Home") },
-                NavItem("Search", Icons.Rounded.Search) { SearchScreen("Search") },
-                NavItem("Profile", Icons.Rounded.Person) { ProfileScreen("Profile") }
+                HomeScreen,
+                SearchScreen(5),
+                ProfileScreen("Hey"),
             )
         )
     }
