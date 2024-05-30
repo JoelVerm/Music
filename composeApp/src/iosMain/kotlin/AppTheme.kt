@@ -1,5 +1,7 @@
 package dev.flami.music
 
+import DarkColorScheme
+import LightColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
