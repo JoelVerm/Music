@@ -1,5 +1,5 @@
 fun getPlaylistName(playlistID: String): String {
-    return "Fun playlist"
+    return "Fun playlist $playlistID"
 }
 
 fun getSongURL(songID: String): String {

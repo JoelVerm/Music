@@ -1,18 +1,15 @@
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
@@ -25,6 +22,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,19 +42,19 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.readBytes
 import kotlinx.coroutines.launch
 
-val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
+val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
     Pair("playlist1", "song1")) {
-    val playlistID by remember { mutableStateOf(it.prop.first) }
-    val songID by remember { mutableStateOf(it.prop.second) }
-    val playlistName by remember { derivedStateOf { getPlaylistName(playlistID) } }
-    val songURL by remember { derivedStateOf { getSongURL(songID) } }
-    val songName by remember { derivedStateOf { getSongName(songID) } }
-    val songLength by remember { derivedStateOf { getSongLength(songID) } }
-    val artistName by remember { derivedStateOf { getArtistName(songID) } }
+    val playlistID by rememberDerived(it.prop.first) { it.prop.first }
+    val songID by rememberDerived(it.prop.second) { it.prop.second }
+    val playlistName by rememberDerived(playlistID) { getPlaylistName(playlistID) }
+    val songURL by rememberDerived(songID) { getSongURL(songID) }
+    val songName by rememberDerived(songID) { getSongName(songID) }
+    val songLength by rememberDerived(songID) { getSongLength(songID) }
+    val artistName by rememberDerived(songID) { getArtistName(songID) }
 
     var image by remember { mutableStateOf(ImageBitmap(500, 500)) }
     val coroutineScope = rememberCoroutineScope()
-    remember { coroutineScope.launch { image = loadPicture(songURL) } }
+    remember(songURL) { coroutineScope.launch { image = loadPicture(songURL) } }
 
     var playing by remember { mutableStateOf(false) }
     var songProgress by remember { mutableStateOf(0f) }
@@ -63,7 +62,7 @@ val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
     var repeat by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(25.dp),
+        modifier = Modifier.fillMaxWidth().weight(1f).padding(25.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(bitmap = image,
@@ -82,7 +81,7 @@ val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
         }
         Row(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             val transparentColor = ButtonColors(
@@ -102,12 +101,14 @@ val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
                 onClick = { shuffle = !shuffle },
                 colors = if (shuffle) secondaryColor else transparentColor,
                 contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
             Button(
                 content = { Icon(Icons.Rounded.SkipPrevious, "Previous") },
                 onClick = { /*TODO*/ },
                 colors = transparentColor,
-                contentPadding = PaddingValues(0.dp)
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
             Button(
                 content = { if (playing)
@@ -115,19 +116,22 @@ val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
                     else Icon(Icons.Rounded.PlayArrow, "Play")
                 },
                 onClick = { playing = !playing },
-                contentPadding = PaddingValues(0.dp)
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
             Button(
                 content = { Icon(Icons.Rounded.SkipNext, "Next") },
                 onClick = { /*TODO*/ },
                 colors = transparentColor,
-                contentPadding = PaddingValues(0.dp)
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
             Button(
                 content = { Icon(Icons.Rounded.Repeat, "Repeat") },
                 onClick = { repeat = !repeat },
                 colors = if (repeat) secondaryColor else transparentColor,
-                contentPadding = PaddingValues(0.dp)
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
         }
         Slider(
@@ -145,6 +149,9 @@ val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
         }
     }
 }
+
+@Composable
+fun <T> rememberDerived(dep: Any?, derived: () -> T): State<T> = remember(dep) { derivedStateOf(derived) }
 
 fun Int.timeStamp(): String {
     val minutes = this / 60

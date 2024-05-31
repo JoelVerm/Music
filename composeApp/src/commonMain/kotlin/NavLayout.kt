@@ -1,10 +1,13 @@
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -23,7 +26,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun NavLayout(items: List<NavScreen<*>>) {
     var selectedItem by remember { mutableStateOf(0) }
-    val slideItem by animateFloatAsState(selectedItem.toFloat() * -windowWidth())
+    val navWidth = windowWidth() * items.size
+    val slideItem by animateFloatAsState((selectedItem.toFloat() - (items.size / 2)) * -windowWidth())
     items.forEach { it.nav = { screen -> selectedItem = items.indexOf(screen) } }
     Scaffold(
         content = {
@@ -31,10 +35,11 @@ fun NavLayout(items: List<NavScreen<*>>) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.width((windowWidth() * items.size).dp)
-                        .absoluteOffset(x = slideItem.dp)
+                    modifier = Modifier.requiredWidth(navWidth.dp)
+                        .absoluteOffset(x = slideItem.dp),
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    items.map { it.screen(it) }
+                    items.map {  it.screen(this, it) }
                 }
             }
         },
@@ -53,9 +58,9 @@ fun NavLayout(items: List<NavScreen<*>>) {
     )
 }
 
-data class NavScreen<T>(val name: String, val icon: ImageVector, var prop: T, private val _screen: @Composable (NavScreen<T>) -> Unit) where T: Any {
+data class NavScreen<T>(val name: String, val icon: ImageVector, var prop: T, private val _screen: @Composable RowScope.(NavScreen<T>) -> Unit) where T: Any {
     @Suppress("UNCHECKED_CAST")
-    val screen = @Composable { nav: NavScreen<*> -> (nav as? NavScreen<T>)?.let { _screen(this) } }
+    val screen: @Composable RowScope.(NavScreen<*>) -> Unit? = @Composable { _screen(it as NavScreen<T>) }
 
     lateinit var nav: (NavScreen<*>) -> Unit
     operator fun invoke(para : T): NavScreen<T> {

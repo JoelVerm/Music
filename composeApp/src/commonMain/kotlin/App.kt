@@ -14,9 +14,9 @@ fun App(
     ) {
         NavLayout(
             listOf(
-                HomeScreen,
+                PlayScreen,
                 SearchScreen(5),
-                ProfileScreen("Hey"),
+                PlaylistsScreen("Hey"),
             )
         )
     }
