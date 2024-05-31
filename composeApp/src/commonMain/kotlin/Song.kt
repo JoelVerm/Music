@@ -3,13 +3,17 @@ fun getPlaylistName(playlistID: String): String {
 }
 
 fun getSongURL(songID: String): String {
-    return "https://random.dog/8c9dd457-5907-4fd4-a825-f8c576fe1284.jpeg"
+    return "https://picsum.photos/600"
 }
 
 fun getSongName(songID: String): String {
-    return "Happy dog"
+    return "Really good song"
+}
+
+fun getSongLength(songID: String): Int {
+    return 83
 }
 
 fun getArtistName(songID: String): String {
-    return "Dog"
+    return "First band"
 }

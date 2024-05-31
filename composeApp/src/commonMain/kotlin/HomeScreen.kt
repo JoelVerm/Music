@@ -1,4 +1,5 @@
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,7 +23,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,17 +45,22 @@ import kotlinx.coroutines.launch
 
 val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
     Pair("playlist1", "song1")) {
-    val (playlistID, songID) = it.prop
-    val playlistName = getPlaylistName(playlistID)
-    val songURL = getSongURL(songID)
-    val songName = getSongName(songID)
-    val artistName = getArtistName(songID)
+    val playlistID by remember { mutableStateOf(it.prop.first) }
+    val songID by remember { mutableStateOf(it.prop.second) }
+    val playlistName by remember { derivedStateOf { getPlaylistName(playlistID) } }
+    val songURL by remember { derivedStateOf { getSongURL(songID) } }
+    val songName by remember { derivedStateOf { getSongName(songID) } }
+    val songLength by remember { derivedStateOf { getSongLength(songID) } }
+    val artistName by remember { derivedStateOf { getArtistName(songID) } }
 
     var image by remember { mutableStateOf(ImageBitmap(500, 500)) }
     val coroutineScope = rememberCoroutineScope()
-    coroutineScope.launch { image = loadPicture(songURL) }
+    remember { coroutineScope.launch { image = loadPicture(songURL) } }
 
     var playing by remember { mutableStateOf(false) }
+    var songProgress by remember { mutableStateOf(0f) }
+    var shuffle by remember { mutableStateOf(false) }
+    var repeat by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(25.dp),
@@ -83,10 +91,16 @@ val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
                 disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                 disabledContainerColor = Color.Transparent
             )
+            val secondaryColor = ButtonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
+                disabledContentColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
+                disabledContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+            )
             Button(
                 content = { Icon(Icons.Rounded.Shuffle, "Shuffle") },
-                onClick = { /*TODO*/ },
-                colors = transparentColor,
+                onClick = { shuffle = !shuffle },
+                colors = if (shuffle) secondaryColor else transparentColor,
                 contentPadding = PaddingValues(0.dp),
             )
             Button(
@@ -111,12 +125,31 @@ val HomeScreen = NavScreen("Home", Icons.Rounded.Home,
             )
             Button(
                 content = { Icon(Icons.Rounded.Repeat, "Repeat") },
-                onClick = { /*TODO*/ },
-                colors = transparentColor,
+                onClick = { repeat = !repeat },
+                colors = if (repeat) secondaryColor else transparentColor,
                 contentPadding = PaddingValues(0.dp)
             )
         }
+        Slider(
+            value = songProgress,
+            onValueChange = { value -> songProgress = value },
+            modifier = Modifier.fillMaxWidth().padding(0.dp, 10.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text((songLength * songProgress).toInt().timeStamp(), style = MaterialTheme.typography.bodyMedium)
+            Text(songLength.timeStamp(), style = MaterialTheme.typography.bodyMedium)
+        }
     }
+}
+
+fun Int.timeStamp(): String {
+    val minutes = this / 60
+    val seconds = this % 60
+    return "$minutes:${if (seconds < 10) "0" else ""}$seconds"
 }
 
 suspend fun loadPicture(url: String): ImageBitmap {
