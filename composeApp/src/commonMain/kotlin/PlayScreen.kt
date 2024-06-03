@@ -22,13 +22,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,24 +33,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.readBytes
-import kotlinx.coroutines.launch
 
 val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
-    Pair("playlist1", "song1")) {
-    val playlistID by rememberDerived(it.prop.first) { it.prop.first }
-    val songID by rememberDerived(it.prop.second) { it.prop.second }
-    val playlistName by rememberDerived(playlistID) { getPlaylistName(playlistID) }
-    val songURL by rememberDerived(songID) { getSongURL(songID) }
-    val songName by rememberDerived(songID) { getSongName(songID) }
-    val songLength by rememberDerived(songID) { getSongLength(songID) }
-    val artistName by rememberDerived(songID) { getArtistName(songID) }
-
-    var image by remember { mutableStateOf(ImageBitmap(500, 500)) }
-    val coroutineScope = rememberCoroutineScope()
-    remember(songURL) { coroutineScope.launch { image = loadPicture(songURL) } }
+    Pair(Playlist(""), Song("", "", 0, "", ImageBitmap(5, 5)))) {
+    val playlist by rememberDerived(it.prop.first) { it.prop.first }
+    val song by rememberDerived(it.prop.second) { it.prop.second }
+    val playlistName by rememberDerived(playlist) { playlist.name }
+    val songName by rememberDerived(song) { song.name }
+    val songLength by rememberDerived(song) { song.duration }
+    val artistName by rememberDerived(song) { song.artist }
+    val image by rememberDerived(song) { song.cover }
 
     var playing by remember { mutableStateOf(false) }
     var songProgress by remember { mutableStateOf(0f) }
@@ -149,29 +137,3 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
         }
     }
 }
-
-@Composable
-fun <T> rememberDerived(dep: Any?, derived: () -> T): State<T> = remember(dep) { derivedStateOf(derived) }
-
-fun Int.timeStamp(): String {
-    val minutes = this / 60
-    val seconds = this % 60
-    return "$minutes:${if (seconds < 10) "0" else ""}$seconds"
-}
-
-suspend fun loadPicture(url: String): ImageBitmap {
-    val client = HttpClient()
-    try {
-        val response = client.get(url)
-        val image = response.readBytes()
-        return byteArrayToImage(image)
-    }
-    catch (e: Exception) {
-        return ImageBitmap(500, 500)
-    }
-    finally {
-        client.close()
-    }
-}
-
-expect fun byteArrayToImage(image: ByteArray): ImageBitmap

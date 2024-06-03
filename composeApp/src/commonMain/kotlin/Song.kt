@@ -1,19 +1,32 @@
-fun getPlaylistName(playlistID: String): String {
-    return "Fun playlist $playlistID"
-}
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.ui.graphics.ImageBitmap
 
-fun getSongURL(songID: String): String {
-    return "https://picsum.photos/600"
-}
+@Composable
+expect fun getDownloadedSongs(): State<List<Playlist>?>
 
-fun getSongName(songID: String): String {
-    return "Really good song"
-}
+data class Playlist(val name: String, val songs: MutableList<Song> = mutableListOf())
+class Song(
+    name: String,
+    artist: String,
+    val duration: Int,
+    val path: String,
+    val cover: ImageBitmap,
+    val content: ByteArray = byteArrayOf()
+) {
+    val name: String
+    val artist: String
+    init {
+        this.name = name.cutoff(35)
+        this.artist = artist.cutoff(35)
+    }
 
-fun getSongLength(songID: String): Int {
-    return 83
-}
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as Song
+        return name == other.name && artist == other.artist
+    }
 
-fun getArtistName(songID: String): String {
-    return "First band"
+    override fun hashCode() = name.hashCode()
 }

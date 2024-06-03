@@ -22,20 +22,6 @@ val SearchScreen = NavScreen("Search", Icons.Rounded.Search, 0) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        var playlist by remember { mutableStateOf("") }
-        var song by remember { mutableStateOf("") }
-        TextField(
-            value = playlist,
-            onValueChange = { playlist = it },
-            label = { Text("Playlist") }
-        )
-        TextField(
-            value = song,
-            onValueChange = { song = it },
-            label = { Text("Song") }
-        )
-        Button(onClick = { it.nav(PlayScreen(Pair(playlist, song))) }) {
-            Text("Go!")
-        }
+        Text("Nothing on the search screen yet...")
     }
 }

@@ -1,16 +1,15 @@
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.ExperimentalComposeUiApi
-import org.jetbrains.skia.Image
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalWindowInfo
-
-actual fun byteArrayToImage(image: ByteArray): ImageBitmap {
-    return Image.makeFromEncoded(image).toComposeImageBitmap()
-}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 actual fun windowWidth(): Int {
     return LocalWindowInfo.current.containerSize.width
+}
+
+@Composable
+actual fun getDownloadedSongs(): State<List<Playlist>?> {
+    TODO()
 }

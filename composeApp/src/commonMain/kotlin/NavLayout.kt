@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -29,7 +31,7 @@ fun NavLayout(items: List<NavScreen<*>>) {
     Scaffold(
         content = {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().consumeWindowInsets(it).padding(it)
             ) {
                 Row(
                     modifier = Modifier.requiredWidth(navWidth.dp)
