@@ -13,3 +13,6 @@ actual fun windowWidth(): Int {
 actual fun getDownloadedSongs(): State<List<Playlist>?> {
     TODO()
 }
+
+@Composable
+actual fun player(): State<Player> = TODO()

@@ -5,6 +5,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 @Composable
 expect fun getDownloadedSongs(): State<List<Playlist>?>
 
+@Composable
+expect fun player(): State<Player>
+
 data class Playlist(val name: String, val songs: MutableList<Song> = mutableListOf())
 class Song(
     name: String,
@@ -14,12 +17,8 @@ class Song(
     val cover: ImageBitmap,
     val content: ByteArray = byteArrayOf()
 ) {
-    val name: String
-    val artist: String
-    init {
-        this.name = name.cutoff(35)
-        this.artist = artist.cutoff(35)
-    }
+    val name: String = name.cutoff(35)
+    val artist: String = artist.cutoff(35)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -29,4 +28,13 @@ class Song(
     }
 
     override fun hashCode() = name.hashCode()
+}
+
+interface Player {
+    fun load(song: Song)
+    fun playing(state: Boolean)
+    fun playing(): Boolean
+    fun seekTo(position: Int)
+    fun progress(): Int
+    fun onComplete(callback: () -> Unit)
 }

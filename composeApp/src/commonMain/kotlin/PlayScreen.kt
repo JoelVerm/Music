@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,27 +34,77 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
-    Pair(Playlist(""), Song("", "", 0, "", ImageBitmap(5, 5)))) {
-    val playlist by rememberDerived(it.prop.first) { it.prop.first }
-    val song by rememberDerived(it.prop.second) { it.prop.second }
-    val playlistName by rememberDerived(playlist) { playlist.name }
-    val songName by rememberDerived(song) { song.name }
-    val songLength by rememberDerived(song) { song.duration }
-    val artistName by rememberDerived(song) { song.artist }
-    val image by rememberDerived(song) { song.cover }
+    Playlist("") to Song("", "", 0, "", ImageBitmap(5, 5))) {
+    val player by player()
 
-    var playing by remember { mutableStateOf(false) }
+    var queue: MutableList<Song> by remember { mutableStateOf(mutableListOf()) }
+    val pastQueue: MutableList<Song> by remember { mutableStateOf(mutableListOf()) }
+
+    val playlist by rememberDerived(it.prop.first) {
+        val index = it.prop.first.songs.indexOf(it.prop.second)
+        queue = it.prop.first.songs.drop(index + 1).toMutableList()
+        pastQueue.clear()
+        it.prop.first
+    }
+    val song by rememberDerived(it.prop.second) {
+        player.load(it.prop.second)
+        it.prop.second
+    }
+
+    var playing by rememberWith(false) { playing -> player.playing(playing) }
+
     var songProgress by remember { mutableStateOf(0f) }
-    var shuffle by remember { mutableStateOf(false) }
-    var repeat by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        while(true) {
+            songProgress = player.progress().toFloat()
+            delay(500)
+        }
+    }
+
+    var shuffle by rememberWith(playlist, false) {
+        shuffle -> if (shuffle) queue = queue.shuffled().toMutableList()
+    }
+    var repeat by remember(playlist) { mutableStateOf(false) }
+
+    var reloadThingy by remember { mutableStateOf(0) }
+    fun nextSong() {
+        if (queue.isEmpty()) {
+            if (repeat) {
+                queue = if (shuffle) playlist.songs.shuffled().toMutableList()
+                    else playlist.songs.toMutableList()
+                pastQueue.clear()
+            }
+            else {
+                playing = false
+                return
+            }
+        }
+        pastQueue.add(song)
+        val nextSong = queue.removeFirst()
+        it(it.prop.first to nextSong)
+        reloadThingy++
+    }
+    fun previousSong() {
+        if (pastQueue.isEmpty()) {
+            player.seekTo(0)
+            return
+        }
+        queue.add(0, song)
+        val previousSong = pastQueue.removeLast()
+        it(it.prop.first to previousSong)
+        reloadThingy++
+    }
+
+    player.onComplete { nextSong() }
 
     Column(
         modifier = Modifier.fillMaxWidth().weight(1f).padding(25.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(bitmap = image,
+        Image(bitmap = song.cover,
             contentDescription = "Album art",
             modifier = Modifier.width(350.dp).aspectRatio(1f).clip(RoundedCornerShape(25.dp)),
             contentScale = ContentScale.Crop,
@@ -63,9 +114,9 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             modifier = Modifier.padding(0.dp, 25.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(playlistName, style = MaterialTheme.typography.titleMedium)
-            Text(songName, style = MaterialTheme.typography.displaySmall)
-            Text(artistName, style = MaterialTheme.typography.bodyMedium)
+            Text(playlist.name, style = MaterialTheme.typography.titleMedium)
+            Text(song.name, style = MaterialTheme.typography.displaySmall)
+            Text(song.artist, style = MaterialTheme.typography.bodyMedium)
         }
         Row(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
@@ -93,7 +144,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             )
             Button(
                 content = { Icon(Icons.Rounded.SkipPrevious, "Previous") },
-                onClick = { /*TODO*/ },
+                onClick = { previousSong() },
                 colors = transparentColor,
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier.fillMaxWidth().weight(1f)
@@ -109,7 +160,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             )
             Button(
                 content = { Icon(Icons.Rounded.SkipNext, "Next") },
-                onClick = { /*TODO*/ },
+                onClick = { nextSong() },
                 colors = transparentColor,
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier.fillMaxWidth().weight(1f)
@@ -124,7 +175,11 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
         }
         Slider(
             value = songProgress,
-            onValueChange = { value -> songProgress = value },
+            valueRange = 0f..song.duration.toFloat(),
+            onValueChange = { value ->
+                player.seekTo(value.toInt())
+                songProgress = value
+            },
             modifier = Modifier.fillMaxWidth().padding(0.dp, 10.dp)
         )
         Row(
@@ -132,8 +187,8 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text((songLength * songProgress).toInt().timeStamp(), style = MaterialTheme.typography.bodyMedium)
-            Text(songLength.timeStamp(), style = MaterialTheme.typography.bodyMedium)
+            Text(songProgress.toInt().timeStamp(), style = MaterialTheme.typography.bodyMedium)
+            Text(song.duration.timeStamp(), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
