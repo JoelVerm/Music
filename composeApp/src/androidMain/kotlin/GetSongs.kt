@@ -45,7 +45,7 @@ fun downloadedSongs(contentResolver: ContentResolver): List<Playlist> {
             continue
         playlistName = playlistName?.substringAfter("Music/")?.trim('/')
         if (playlistName.isNullOrEmpty())
-            playlistName = "No playlist"
+            playlistName = NO_PLAYLIST_NAME
         if (!playlists.any { it.name == playlistName })
             playlists.add(Playlist(playlistName))
         val title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE))

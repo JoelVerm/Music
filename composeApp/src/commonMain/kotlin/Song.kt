@@ -2,6 +2,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.ImageBitmap
 
+const val NO_PLAYLIST_NAME = "Playlist Zero"
+
 @Composable
 expect fun getDownloadedSongs(): State<List<Playlist>?>
 
