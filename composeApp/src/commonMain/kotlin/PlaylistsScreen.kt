@@ -2,6 +2,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -41,7 +42,7 @@ val PlaylistsScreen = NavScreen("Playlists", Icons.AutoMirrored.Rounded.Playlist
             ) {
                 Column(
                     horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.Top,
                     modifier = Modifier.padding(10.dp).fillMaxWidth()
                 ) {
                     var songsVisible by remember { mutableStateOf(false) }
@@ -52,33 +53,39 @@ val PlaylistsScreen = NavScreen("Playlists", Icons.AutoMirrored.Rounded.Playlist
                             RoundedCornerShape(5.dp)
                         ).fillMaxWidth().clickable { songsVisible = !songsVisible }
                     )
-                    playlist.songs.map { song ->
-                        AnimatedVisibility(songsVisible) {
-                            ListItem(
-                                headlineContent = { Text(song.name) },
-                                overlineContent = { Text(song.artist) },
-                                supportingContent = { Text(song.duration.timeStamp()) },
-                                leadingContent = {
-                                    Image(
-                                        song.cover,
-                                        "Album art",
-                                        modifier = Modifier.height(50.dp).aspectRatio(1f).clip(
-                                            RoundedCornerShape(10.dp)
-                                        ),
-                                        contentScale = ContentScale.Crop,
-                                        alignment = Alignment.Center
+                    AnimatedVisibility(songsVisible) {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(modifier = Modifier.height(0.dp))
+                            playlist.songs.map { song ->
+                                ListItem(
+                                    headlineContent = { Text(song.name) },
+                                    overlineContent = { Text(song.artist) },
+                                    supportingContent = { Text(song.duration.timeStamp()) },
+                                    leadingContent = {
+                                        Image(
+                                            song.cover,
+                                            "Album art",
+                                            modifier = Modifier.height(50.dp).aspectRatio(1f).clip(
+                                                RoundedCornerShape(10.dp)
+                                            ),
+                                            contentScale = ContentScale.Crop,
+                                            alignment = Alignment.Center
+                                        )
+                                    },
+                                    trailingContent = {
+                                        Button(
+                                            onClick = { it.nav(PlayScreen(Pair(playlist, song))) },
+                                            content = { Text("Play") }
+                                        )
+                                    },
+                                    modifier = Modifier.clip(
+                                        RoundedCornerShape(15.dp)
                                     )
-                                },
-                                trailingContent = {
-                                    Button(
-                                        onClick = { it.nav(PlayScreen(Pair(playlist, song))) },
-                                        content = { Text("Play") }
-                                    )
-                                },
-                                modifier = Modifier.clip(
-                                    RoundedCornerShape(15.dp)
                                 )
-                            )
+                            }
                         }
                     }
                 }

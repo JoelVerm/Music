@@ -1,4 +1,7 @@
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -25,13 +28,23 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun NavLayout(items: List<NavScreen<*>>) {
     var selectedItem by remember { mutableStateOf(0) }
-    val navWidth = windowWidth() * items.size
+    val windowWidth = windowWidth()
+    val navWidth = windowWidth * items.size
     val slideItem by animateFloatAsState((selectedItem.toFloat() - (items.size / 2)) * -windowWidth())
     items.forEach { it.nav = { screen -> selectedItem = items.indexOf(screen) } }
     Scaffold(
         content = {
+            var draggableDelta by remember { mutableStateOf(0f) }
             Box(
                 modifier = Modifier.fillMaxWidth().consumeWindowInsets(it).padding(it)
+                    .draggable(orientation = Orientation.Horizontal, state = rememberDraggableState { delta ->
+                        draggableDelta += delta
+                    }, onDragStarted = { draggableDelta = 0f }, onDragStopped = {
+                        if (draggableDelta > windowWidth / 4)
+                            selectedItem = (selectedItem - 1).coerceAtLeast(0)
+                        else if (draggableDelta < -windowWidth / 4)
+                            selectedItem = (selectedItem + 1).coerceAtMost(items.size - 1)
+                    })
             ) {
                 Row(
                     modifier = Modifier.requiredWidth(navWidth.dp)
