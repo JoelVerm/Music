@@ -50,7 +50,7 @@ val PlaylistsScreen = NavScreen("Playlists", Icons.AutoMirrored.Rounded.Playlist
                         playlist.name,
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.clip(
-                            RoundedCornerShape(5.dp)
+                            RoundedCornerShape(15.dp)
                         ).fillMaxWidth().clickable { songsVisible = !songsVisible }
                     )
                     AnimatedVisibility(songsVisible) {
