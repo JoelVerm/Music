@@ -31,10 +31,15 @@ class Song(
 }
 
 interface Player {
-    fun load(song: Song)
+    fun load(playlist: List<Song>)
+    fun goto(song: Song)
+    fun currentSong(): Song?
     fun playing(state: Boolean)
     fun playing(): Boolean
     fun seekTo(position: Int)
     fun progress(): Int
-    fun onComplete(callback: () -> Unit)
+    fun next()
+    fun previous()
+    fun shuffle(state: Boolean)
+    fun repeat(state: Boolean)
 }

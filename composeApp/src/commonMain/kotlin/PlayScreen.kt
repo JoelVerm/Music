@@ -40,71 +40,47 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
     Playlist("") to Song("", "", 0, "", ImageBitmap(5, 5))) {
     val player by player()
 
-    var queue: MutableList<Song> by remember { mutableStateOf(mutableListOf()) }
-    val pastQueue: MutableList<Song> by remember { mutableStateOf(mutableListOf()) }
-
     val playlist by rememberDerived(it.prop.first) {
-        val index = it.prop.first.songs.indexOf(it.prop.second)
-        queue = it.prop.first.songs.drop(index + 1).toMutableList()
-        pastQueue.clear()
+        player.load(it.prop.first.songs)
         it.prop.first
     }
-    val song by rememberDerived(it.prop.second) {
-        player.load(it.prop.second)
+    val _song by rememberDerived(it.prop.second) {
+        player.goto(it.prop.second)
         it.prop.second
     }
 
-    var playing by rememberWith(false) { playing -> player.playing(playing) }
-
+    var currentSong by remember { mutableStateOf(player.currentSong()) }
     var songProgress by remember { mutableStateOf(0f) }
+
     LaunchedEffect(Unit) {
         while(true) {
+            currentSong = player.currentSong()
             songProgress = player.progress().toFloat()
             delay(500)
         }
     }
 
-    var shuffle by rememberWith(playlist, false) {
-        shuffle -> if (shuffle) queue = queue.shuffled().toMutableList()
-    }
-    var repeat by remember(playlist) { mutableStateOf(false) }
+    var playing by rememberWith(player.playing()) { playing -> player.playing(playing) }
 
-    var reloadThingy by remember { mutableStateOf(0) }
+    var shuffle by rememberWith(playlist, false) {
+        shuffle -> player.shuffle(shuffle)
+    }
+    var repeat by rememberWith(playlist, false) {
+        repeat -> player.repeat(repeat)
+    }
+
     fun nextSong() {
-        if (queue.isEmpty()) {
-            if (repeat) {
-                queue = if (shuffle) playlist.songs.shuffled().toMutableList()
-                    else playlist.songs.toMutableList()
-                pastQueue.clear()
-            }
-            else {
-                playing = false
-                return
-            }
-        }
-        pastQueue.add(song)
-        val nextSong = queue.removeFirst()
-        it(it.prop.first to nextSong)
-        reloadThingy++
+        player.next()
     }
     fun previousSong() {
-        if (pastQueue.isEmpty()) {
-            player.seekTo(0)
-            return
-        }
-        queue.add(0, song)
-        val previousSong = pastQueue.removeLast()
-        it(it.prop.first to previousSong)
-        reloadThingy++
+        player.previous()
     }
-
-    player.onComplete { nextSong() }
 
     Column(
         modifier = Modifier.fillMaxWidth().weight(1f).padding(25.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(bitmap = song.cover,
+        Image(bitmap = currentSong?.cover ?: ImageBitmap(5, 5),
             contentDescription = "Album art",
             modifier = Modifier.width(350.dp).aspectRatio(1f).clip(RoundedCornerShape(25.dp)),
             contentScale = ContentScale.Crop,
@@ -115,8 +91,8 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(playlist.name, style = MaterialTheme.typography.titleMedium)
-            Text(song.name, style = MaterialTheme.typography.displaySmall)
-            Text(song.artist, style = MaterialTheme.typography.bodyMedium)
+            Text(currentSong?.name ?: "", style = MaterialTheme.typography.displaySmall)
+            Text(currentSong?.artist ?: "", style = MaterialTheme.typography.bodyMedium)
         }
         Row(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
@@ -175,7 +151,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
         }
         Slider(
             value = songProgress,
-            valueRange = 0f..song.duration.toFloat(),
+            valueRange = 0f..(currentSong?.duration?.toFloat() ?: 0f),
             onValueChange = { value ->
                 player.seekTo(value.toInt())
                 songProgress = value
@@ -188,7 +164,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(songProgress.toInt().timeStamp(), style = MaterialTheme.typography.bodyMedium)
-            Text(song.duration.timeStamp(), style = MaterialTheme.typography.bodyMedium)
+            Text(currentSong?.duration?.timeStamp() ?: "..", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

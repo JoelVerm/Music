@@ -17,7 +17,7 @@ interface RememberWith<T> {
 }
 
 @Composable
-fun <T> rememberWith(it: T, set: (T) -> Unit) = rememberWith(null, it, set)
+fun <T> rememberWith(it: T, set: (T) -> Unit) = rememberWith(it, it, set)
 @Composable
 fun <T> rememberWith(key: Any?, it: T, set: (T) -> Unit): RememberWith<T> {
     val state = remember(key) { mutableStateOf(it) }

@@ -36,7 +36,10 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.ktor.client.okhttp)
+            implementation(libs.androidx.media3.exoplayer)
+            implementation(libs.androidx.media3.ui)
+            implementation(libs.androidx.media3.common)
+            implementation(libs.androidx.media3.session)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
