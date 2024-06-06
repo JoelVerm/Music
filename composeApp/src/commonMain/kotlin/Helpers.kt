@@ -21,6 +21,7 @@ fun <T> rememberWith(it: T, set: (T) -> Unit) = rememberWith(it, it, set)
 @Composable
 fun <T> rememberWith(key: Any?, it: T, set: (T) -> Unit): RememberWith<T> {
     val state = remember(key) { mutableStateOf(it) }
+    set(it)
     return object: RememberWith<T> {
         override operator fun getValue(thisRef: Any?, property: KProperty<*>): T = state.getValue(thisRef, property)
         override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {

@@ -20,6 +20,11 @@ actual fun getDownloadedSongs(): List<Playlist> {
 }
 
 @Composable
+actual fun getLastSongProgress(): SongProgress? {
+    TODO()
+}
+
+@Composable
 actual fun player(): State<Player> {
     TODO()
 }

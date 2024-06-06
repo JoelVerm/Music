@@ -37,16 +37,20 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
-    Playlist("") to Song("", "", 0, "", ImageBitmap(5, 5))) {
+    Playlist("") to Song("", "", 0, "", ImageBitmap(5, 5)) to 0) {
     val player by player()
 
-    val playlist by rememberDerived(it.prop.first) {
-        player.load(it.prop.first.songs)
-        it.prop.first
+    val playlist by rememberDerived(it.prop.playlist) {
+        player.load(it.prop.playlist)
+        it.prop.playlist
     }
-    val _song by rememberDerived(it.prop.second) {
-        player.goto(it.prop.second)
-        it.prop.second
+    val _song by rememberDerived(it.prop.song) {
+        player.goto(it.prop.song)
+        it.prop.song
+    }
+    val _start by rememberDerived(it.prop.startTime) {
+        player.seekTo(it.prop.startTime)
+        it.prop.startTime
     }
 
     var currentSong by remember { mutableStateOf(player.currentSong()) }
@@ -168,3 +172,6 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
         }
     }
 }
+
+data class PlayState(val playlist: Playlist, val song: Song, val startTime: Int)
+infix fun Pair<Playlist, Song>.to(startTime: Int) = PlayState(first, second, startTime)

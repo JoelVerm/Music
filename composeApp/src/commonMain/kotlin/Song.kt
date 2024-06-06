@@ -11,6 +11,9 @@ expect fun requestPermissions(): State<Boolean>
 expect fun getDownloadedSongs(): List<Playlist>
 
 @Composable
+expect fun getLastSongProgress(): SongProgress?
+
+@Composable
 expect fun player(): State<Player>
 
 data class Playlist(val name: String, val songs: MutableList<Song> = mutableListOf())
@@ -35,8 +38,10 @@ class Song(
     override fun hashCode() = name.hashCode()
 }
 
+data class SongProgress(val playlist: String, val song: String, val progress: Int)
+
 interface Player {
-    fun load(playlist: List<Song>)
+    fun load(playlist: Playlist)
     fun goto(song: Song)
     fun currentSong(): Song?
     fun playing(state: Boolean)

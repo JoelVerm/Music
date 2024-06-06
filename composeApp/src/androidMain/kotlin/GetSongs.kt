@@ -1,4 +1,5 @@
 import android.content.ContentUris
+import android.content.Context
 import android.provider.MediaStore
 import android.util.Size
 import androidx.compose.runtime.Composable
@@ -11,7 +12,11 @@ import java.io.FileNotFoundException
 
 @Composable
 actual fun getDownloadedSongs(): List<Playlist> {
-    val contentResolver = LocalContext.current.contentResolver
+    return downloadedSongs(LocalContext.current)
+}
+
+fun downloadedSongs(context: Context): List<Playlist> {
+    val contentResolver = context.contentResolver
     val selection = "${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.IS_DOWNLOAD} = 1"
     val cursor = contentResolver.query(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, selection, null, null

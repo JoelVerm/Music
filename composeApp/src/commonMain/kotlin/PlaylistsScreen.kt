@@ -77,7 +77,7 @@ val PlaylistsScreen = NavScreen("Playlists", Icons.AutoMirrored.Rounded.Playlist
                                     },
                                     trailingContent = {
                                         Button(
-                                            onClick = { it.nav(PlayScreen(Pair(playlist, song))) },
+                                            onClick = { it.nav(PlayScreen(playlist to song to 0)) },
                                             content = { Text("Play") }
                                         )
                                     },

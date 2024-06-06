@@ -35,12 +35,7 @@ fun App(
 
             NavLayout(
                 listOf(
-                    if(playlists!!.any { it.songs.isNotEmpty() }) PlayScreen(
-                        Pair(
-                            playlists!!.first(),
-                            playlists!!.first().songs.first()
-                        )
-                    ) else PlayScreen,
+                    getPlayScreen(playlists!!),
                     SearchScreen(5),
                     PlaylistsScreen(playlists!!),
                 )
@@ -48,3 +43,26 @@ fun App(
         }
     }
 }
+
+@Composable
+fun getPlayScreen(playlists: List<Playlist>) =
+    if(playlists.any { it.songs.isNotEmpty() }) {
+        getLastSongProgress()?.let { progress ->
+            playlists.find { progress.playlist == it.name } ?.let { playlist ->
+                PlayScreen(
+                    PlayState(
+                        playlist,
+                        playlist.songs.find { progress.song == it.name }!!,
+                        progress.progress
+                    )
+                )
+            }
+        } ?:
+        PlayScreen(
+            PlayState(
+                playlists.first(),
+                playlists.first().songs.first(),
+                0
+            )
+        )
+    } else PlayScreen
