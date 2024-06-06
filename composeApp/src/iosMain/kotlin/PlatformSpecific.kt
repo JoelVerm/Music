@@ -10,9 +10,16 @@ actual fun windowWidth(): Int {
 }
 
 @Composable
-actual fun getDownloadedSongs(): State<List<Playlist>?> {
+actual fun requestPermissions(): State<Boolean> {
     TODO()
 }
 
 @Composable
-actual fun player(): State<Player> = TODO()
+actual fun getDownloadedSongs(): List<Playlist> {
+    TODO()
+}
+
+@Composable
+actual fun player(): State<Player> {
+    TODO()
+}

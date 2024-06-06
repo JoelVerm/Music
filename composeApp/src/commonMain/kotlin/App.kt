@@ -20,15 +20,19 @@ fun App(
         darkTheme,
         dynamicColor
     ) {
-        val playlists by getDownloadedSongs()
-        if (playlists == null) {
+        val permissionsGranted by requestPermissions()
+        if (!permissionsGranted) {
             Scaffold {
                 Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(10.dp)) {
-                    Text("Grant storage permission")
-                    Text("to access music files.")
+                    Text("Grant all permissions")
+                    Text("to play music")
                 }
             }
         } else {
+            var playlists by remember { mutableStateOf(null as List<Playlist>?) }
+            if (playlists == null)
+                playlists = getDownloadedSongs()
+
             NavLayout(
                 listOf(
                     if(playlists!!.any { it.songs.isNotEmpty() }) PlayScreen(

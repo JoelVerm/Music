@@ -1,18 +1,7 @@
-import android.content.ContentResolver
 import android.content.ContentUris
-import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.MediaStore
 import android.util.Size
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -21,19 +10,8 @@ import androidx.core.database.getStringOrNull
 import java.io.FileNotFoundException
 
 @Composable
-actual fun getDownloadedSongs(): State<List<Playlist>?> {
+actual fun getDownloadedSongs(): List<Playlist> {
     val contentResolver = LocalContext.current.contentResolver
-    val permissionsGranted by requestPermissions()
-    val playlists = rememberDerived(permissionsGranted) {
-        if (permissionsGranted)
-            downloadedSongs(contentResolver)
-        else
-            null
-    }
-    return playlists
-}
-
-fun downloadedSongs(contentResolver: ContentResolver): List<Playlist> {
     val selection = "${MediaStore.Audio.Media.IS_MUSIC} = 1 OR ${MediaStore.Audio.Media.IS_DOWNLOAD} = 1"
     val cursor = contentResolver.query(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, selection, null, null
@@ -69,33 +47,4 @@ fun downloadedSongs(contentResolver: ContentResolver): List<Playlist> {
     }
     cursor.close()
     return playlists
-}
-
-@Composable
-fun requestPermissions(): State<Boolean> {
-    val granted = remember { mutableStateOf(false) }
-    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-        android.Manifest.permission.READ_MEDIA_AUDIO
-    else
-        android.Manifest.permission.READ_EXTERNAL_STORAGE
-    val ctx = LocalContext.current
-    if (ctx.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
-        granted.value = true
-    else {
-        val requestPermissionLauncher =
-            rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-                if (it)
-                    granted.value = true
-                else
-                    Toast.makeText(
-                        ctx,
-                        "You need this permission for playing music",
-                        Toast.LENGTH_LONG
-                    ).show()
-            }
-        LaunchedEffect(Unit) {
-            requestPermissionLauncher.launch(permission)
-        }
-    }
-    return granted
 }

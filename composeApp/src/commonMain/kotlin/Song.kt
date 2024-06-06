@@ -5,7 +5,10 @@ import androidx.compose.ui.graphics.ImageBitmap
 const val NO_PLAYLIST_NAME = "Playlist Zero"
 
 @Composable
-expect fun getDownloadedSongs(): State<List<Playlist>?>
+expect fun requestPermissions(): State<Boolean>
+
+@Composable
+expect fun getDownloadedSongs(): List<Playlist>
 
 @Composable
 expect fun player(): State<Player>
