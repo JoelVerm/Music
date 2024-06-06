@@ -37,47 +37,39 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
-    Playlist("") to Song("", "", 0, "", ImageBitmap(5, 5)) to 0) {
+    PlayState(listOf(), "", "", 0)) {
     val player by player()
 
-    val playlist by rememberDerived(it.prop.playlist) {
-        player.load(it.prop.playlist)
-        it.prop.playlist
+    val playlists = it.prop.playlists
+    val playlist by rememberDerived(it.prop.playlist) { pl ->
+        (playlists.find { it.name == pl } ?: playlists.firstOrNull())?.also { player.load(it) }
     }
-    val _song by rememberDerived(it.prop.song) {
-        player.goto(it.prop.song)
-        it.prop.song
+    val startSong by rememberDerived(it.prop.song) { sn ->
+        (playlist?.songs?.find { it.name == sn } ?: playlist?.songs?.firstOrNull())?.also { player.goto(it) }
     }
-    val _start by rememberDerived(it.prop.startTime) {
-        player.seekTo(it.prop.startTime)
-        it.prop.startTime
+    val startTime by rememberDerived(it.prop.startTime) { st ->
+        st.also { player.seekTo(it) }
     }
 
-    var currentSong by remember { mutableStateOf(player.currentSong()) }
-    var songProgress by remember { mutableStateOf(0f) }
+    var currentSong by remember(startSong) { mutableStateOf(startSong) }
+    var songProgress by remember(startTime) { mutableStateOf(startTime.toFloat()) }
+
+    var playing by rememberWith(player.playing()) {
+        player.playing(it)
+    }
+    var shuffle by rememberWith(playlist, false) {
+        player.shuffle(it)
+    }
+    var repeat by rememberWith(playlist, false) {
+        player.repeat(it)
+    }
 
     LaunchedEffect(Unit) {
         while(true) {
-            currentSong = player.currentSong()
+            player.currentSong()?.let { currentSong = it }
             songProgress = player.progress().toFloat()
             delay(500)
         }
-    }
-
-    var playing by rememberWith(player.playing()) { playing -> player.playing(playing) }
-
-    var shuffle by rememberWith(playlist, false) {
-        shuffle -> player.shuffle(shuffle)
-    }
-    var repeat by rememberWith(playlist, false) {
-        repeat -> player.repeat(repeat)
-    }
-
-    fun nextSong() {
-        player.next()
-    }
-    fun previousSong() {
-        player.previous()
     }
 
     Column(
@@ -94,7 +86,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             modifier = Modifier.padding(0.dp, 25.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(playlist.name, style = MaterialTheme.typography.titleMedium)
+            Text(playlist?.name ?: "", style = MaterialTheme.typography.titleMedium)
             Text(currentSong?.name ?: "", style = MaterialTheme.typography.displaySmall)
             Text(currentSong?.artist ?: "", style = MaterialTheme.typography.bodyMedium)
         }
@@ -124,7 +116,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             )
             Button(
                 content = { Icon(Icons.Rounded.SkipPrevious, "Previous") },
-                onClick = { previousSong() },
+                onClick = { player.previous() },
                 colors = transparentColor,
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier.fillMaxWidth().weight(1f)
@@ -140,7 +132,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             )
             Button(
                 content = { Icon(Icons.Rounded.SkipNext, "Next") },
-                onClick = { nextSong() },
+                onClick = { player.next() },
                 colors = transparentColor,
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier.fillMaxWidth().weight(1f)
@@ -173,5 +165,10 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
     }
 }
 
-data class PlayState(val playlist: Playlist, val song: Song, val startTime: Int)
-infix fun Pair<Playlist, Song>.to(startTime: Int) = PlayState(first, second, startTime)
+data class PlayState(val playlists: List<Playlist>, val playlist: String, val song: String, val startTime: Int) {
+    constructor(playlists: List<Playlist>) : this(playlists, playlists.first().name, playlists.first().songs.first().name, 0)
+}
+infix fun PlayState.from(playlist: String) = PlayState(playlists, playlist, "", 0)
+infix fun PlayState.play(song: String) = PlayState(playlists, playlist, song, 0)
+infix fun PlayState.at(progress: Int) = PlayState(playlists, playlist, song, progress)
+fun NavScreen<PlayState>.load(other: (PlayState) -> PlayState) = invoke(other(prop))

@@ -32,10 +32,13 @@ fun App(
             var playlists by remember { mutableStateOf(null as List<Playlist>?) }
             if (playlists == null)
                 playlists = getDownloadedSongs()
+            val lastSong = getLastSongProgress()
 
             NavLayout(
                 listOf(
-                    getPlayScreen(playlists!!),
+                    PlayScreen(
+                        lastSong?.let { PlayState(playlists!!, it.playlist, it.song, it.progress) } ?: PlayState(playlists!!)
+                    ),
                     SearchScreen(5),
                     PlaylistsScreen(playlists!!),
                 )
@@ -43,26 +46,3 @@ fun App(
         }
     }
 }
-
-@Composable
-fun getPlayScreen(playlists: List<Playlist>) =
-    if(playlists.any { it.songs.isNotEmpty() }) {
-        getLastSongProgress()?.let { progress ->
-            playlists.find { progress.playlist == it.name } ?.let { playlist ->
-                PlayScreen(
-                    PlayState(
-                        playlist,
-                        playlist.songs.find { progress.song == it.name }!!,
-                        progress.progress
-                    )
-                )
-            }
-        } ?:
-        PlayScreen(
-            PlayState(
-                playlists.first(),
-                playlists.first().songs.first(),
-                0
-            )
-        )
-    } else PlayScreen

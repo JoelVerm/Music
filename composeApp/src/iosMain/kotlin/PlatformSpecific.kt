@@ -3,6 +3,10 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalWindowInfo
 
+actual fun log(tag: String, message: String) {
+    TODO()
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 actual fun windowWidth(): Int {

@@ -7,8 +7,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlin.reflect.KProperty
 
+expect fun log(tag: String, message: String)
+
 @Composable
-fun <T> rememberDerived(dep: Any?, derived: () -> T): State<T> = remember(dep) { derivedStateOf(derived) }
+fun <I, T> rememberDerived(dep: I, derived: (I) -> T): State<T> = remember(dep) { derivedStateOf { derived(dep) } }
 
 interface RememberWith<T> {
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T
