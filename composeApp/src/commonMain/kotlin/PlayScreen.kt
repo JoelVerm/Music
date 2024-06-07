@@ -44,15 +44,12 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
     val playlist by rememberDerived(it.prop.playlist) { pl ->
         (playlists.find { it.name == pl } ?: playlists.firstOrNull())?.also { player.load(it) }
     }
-    val startSong by rememberDerived(it.prop.song) { sn ->
-        (playlist?.songs?.find { it.name == sn } ?: playlist?.songs?.firstOrNull())?.also { player.goto(it) }
-    }
-    val startTime by rememberDerived(it.prop.startTime) { st ->
-        st.also { player.seekTo(it) }
+    val startSong by rememberDerived(it.prop) { sn ->
+        (playlist?.songs?.find { it.name == sn.song } ?: playlist?.songs?.firstOrNull())?.also { player.goto(it, sn.startTime) }
     }
 
     var currentSong by remember(startSong) { mutableStateOf(startSong) }
-    var songProgress by remember(startTime) { mutableStateOf(startTime.toFloat()) }
+    var songProgress by remember(startSong) { mutableStateOf(it.prop.startTime.toFloat()) }
 
     var playing by rememberWith(player.playing()) {
         player.playing(it)
@@ -66,9 +63,9 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
 
     LaunchedEffect(Unit) {
         while(true) {
+            delay(500)
             player.currentSong()?.let { currentSong = it }
             songProgress = player.progress().toFloat()
-            delay(500)
         }
     }
 

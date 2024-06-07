@@ -43,6 +43,7 @@ data class SongProgress(val playlist: String, val song: String, val progress: In
 interface Player {
     fun load(playlist: Playlist)
     fun goto(song: Song)
+    fun goto(song: Song, progress: Int)
     fun currentSong(): Song?
     fun playing(state: Boolean)
     fun playing(): Boolean

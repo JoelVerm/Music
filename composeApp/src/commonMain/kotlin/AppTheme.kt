@@ -1,5 +1,3 @@
-package dev.flami.music
-
 import androidx.compose.runtime.Composable
 
 @Composable

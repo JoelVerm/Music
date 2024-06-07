@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaItem
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
@@ -39,11 +38,9 @@ fun getLastSongProgress(context: Context): SongProgress? {
             if (parts.size == 3) SongProgress(parts[0], parts[1], parts[2].toInt())
             else null
         }
-        ?.apply { Log.d("songProgress", "Load playlist: $playlist, song: $song, progress: $progress") }
 }
 fun saveLastSongProgress(context: Context, playlist: String, song: String, progress: Int) {
     if (playlist.isEmpty() || song.isEmpty()) return
-    Log.d("songProgress", "Save playlist: $playlist, song: $song, progress: $progress")
     context
         .getSharedPreferences(PREFERENCES_FILE_KEY, Context.MODE_PRIVATE)
         .edit()
@@ -92,6 +89,11 @@ class AndroidPlayer (context: Context) : Player {
     override fun goto(song: Song) {
         checkPlayer { goto(song) } ?: return
         player?.seekToDefaultPosition(playlist?.songs?.indexOf(song) ?: 0)
+    }
+
+    override fun goto(song: Song, progress: Int) {
+        checkPlayer { goto(song, progress) } ?: return
+        player?.seekTo(playlist?.songs?.indexOf(song) ?: 0, progress * 1000L)
     }
 
     override fun currentSong(): Song? =

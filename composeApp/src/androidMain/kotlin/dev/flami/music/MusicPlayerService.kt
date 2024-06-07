@@ -1,7 +1,5 @@
 package dev.flami.music
 
-import android.os.AsyncTask
-import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -15,16 +13,11 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import downloadedSongs
 import getLastSongProgress
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import saveLastSongProgress
-import kotlin.coroutines.CoroutineContext
 
 @UnstableApi
 class MusicPlayerService: MediaLibraryService() {
-    lateinit var player: Player
-    lateinit var session: MediaLibrarySession
+    private lateinit var player: Player
+    private lateinit var session: MediaLibrarySession
 
     override fun  onCreate() {
         super.onCreate()
