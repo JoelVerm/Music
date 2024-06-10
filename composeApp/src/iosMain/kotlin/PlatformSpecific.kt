@@ -7,12 +7,6 @@ actual fun log(tag: String, message: String) {
     TODO()
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-actual fun windowWidth(): Int {
-    return LocalWindowInfo.current.containerSize.width
-}
-
 @Composable
 actual fun requestPermissions(): State<Boolean> {
     TODO()

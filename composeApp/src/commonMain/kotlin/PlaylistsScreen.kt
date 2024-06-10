@@ -47,7 +47,7 @@ val PlaylistsScreen = NavScreen("Playlists", Icons.AutoMirrored.Rounded.Playlist
                 ) {
                     var songsVisible by remember { mutableStateOf(false) }
                     Text(
-                        playlist.name,
+                        " ${playlist.name} ",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.clip(
                             RoundedCornerShape(15.dp)
@@ -77,7 +77,7 @@ val PlaylistsScreen = NavScreen("Playlists", Icons.AutoMirrored.Rounded.Playlist
                                     },
                                     trailingContent = {
                                         Button(
-                                            onClick = { it.nav(PlayScreen.load { it from playlist.name play song.name at 0 }) },
+                                            onClick = { PlayScreen.load { it from playlist.name play song.name at 0 } .nav() },
                                             content = { Text("Play") }
                                         )
                                     },

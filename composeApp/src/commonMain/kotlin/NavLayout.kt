@@ -4,6 +4,7 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.absoluteOffset
@@ -25,30 +26,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+const val minDragDelta = 100
+
 @Composable
 fun NavLayout(items: List<NavScreen<*>>) {
     var selectedItem by remember { mutableStateOf(0) }
-    val windowWidth = windowWidth()
-    val navWidth = windowWidth * items.size
-    val slideItem by animateFloatAsState((selectedItem.toFloat() - (items.size / 2)) * -windowWidth())
-    items.forEach { it.nav = { screen -> selectedItem = items.indexOf(screen) } }
+    val slideItem by animateFloatAsState((items.size / 2) - selectedItem.toFloat())
+    items.forEach { it.nav = { selectedItem = items.indexOf(it) } }
     Scaffold(
         content = {
             var draggableDelta by remember { mutableStateOf(0f) }
-            Box(
+            BoxWithConstraints (
                 modifier = Modifier.fillMaxWidth().consumeWindowInsets(it).padding(it)
                     .draggable(orientation = Orientation.Horizontal, state = rememberDraggableState { delta ->
                         draggableDelta += delta
                     }, onDragStarted = { draggableDelta = 0f }, onDragStopped = {
-                        if (draggableDelta > windowWidth / 4)
+                        if (draggableDelta > minDragDelta)
                             selectedItem = (selectedItem - 1).coerceAtLeast(0)
-                        else if (draggableDelta < -windowWidth / 4)
+                        else if (draggableDelta < -minDragDelta)
                             selectedItem = (selectedItem + 1).coerceAtMost(items.size - 1)
                     })
             ) {
                 Row(
-                    modifier = Modifier.requiredWidth(navWidth.dp)
-                        .absoluteOffset(x = slideItem.dp),
+                    modifier = Modifier.requiredWidth(maxWidth * items.size)
+                        .absoluteOffset(x = maxWidth * slideItem),
                     horizontalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
                     items.map {  it.screen(this, it) }
@@ -74,12 +75,9 @@ data class NavScreen<T>(val name: String, val icon: ImageVector, var prop: T, pr
     @Suppress("UNCHECKED_CAST")
     val screen: @Composable RowScope.(NavScreen<*>) -> Unit? = @Composable { _screen(it as NavScreen<T>) }
 
-    lateinit var nav: (NavScreen<*>) -> Unit
+    lateinit var nav: () -> Unit
     operator fun invoke(para : T): NavScreen<T> {
         prop = para
         return this
     }
 }
-
-@Composable
-expect fun windowWidth(): Int

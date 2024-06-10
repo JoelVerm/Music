@@ -22,8 +22,7 @@ class Song(
     artist: String,
     val duration: Int,
     val path: String,
-    val cover: ImageBitmap,
-    val content: ByteArray = byteArrayOf()
+    val cover: ImageBitmap
 ) {
     val name: String = name.cutoff(35)
     val artist: String = artist.cutoff(35)

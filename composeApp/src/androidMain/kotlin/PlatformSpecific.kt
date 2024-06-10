@@ -17,11 +17,6 @@ actual fun log(tag: String, message: String) {
 }
 
 @Composable
-actual fun windowWidth(): Int {
-    return LocalConfiguration.current.screenWidthDp
-}
-
-@Composable
 actual fun requestPermissions(): State<Boolean> {
     val granted = remember { mutableStateOf(false) }
     val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
