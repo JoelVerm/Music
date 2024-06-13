@@ -90,7 +90,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
     ) {
         Image(bitmap = currentSong?.cover ?: ImageBitmap(5, 5),
             contentDescription = "Album art",
-            modifier = Modifier.width(350.dp).aspectRatio(1f).clip(RoundedCornerShape(25.dp)),
+            modifier = Modifier.width(350.dp).aspectRatio(1f).clip(RoundedCornerShape(25.dp)).weight(1f),
             contentScale = ContentScale.Crop,
             alignment = Alignment.Center
         )
@@ -99,7 +99,7 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(playlist?.name ?: "", style = MaterialTheme.typography.titleMedium)
-            Text(currentSong?.name ?: "", style = MaterialTheme.typography.displaySmall)
+            Text(currentSong?.name ?: "", style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center)
             Text(currentSong?.artist ?: "", style = MaterialTheme.typography.bodyMedium)
         }
         Row(
@@ -156,10 +156,15 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
         )
         Row(
             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(songProgress.toInt().timeStamp(), style = MaterialTheme.typography.bodyMedium)
+            Text(
+                songProgress.toInt().timeStamp(),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.weight(1f)
+            )
             Button(
                 content = { Icon(Icons.Rounded.History, "Rewind 10 seconds") },
                 onClick = {
@@ -167,7 +172,8 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
                     songProgress -= 10
                 },
                 colors = transparentColor,
-                contentPadding = PaddingValues(0.dp)
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.weight(1f)
             )
             Button(
                 content = { Icon(Icons.Rounded.Update, "Skip 10 seconds") },
@@ -176,9 +182,15 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
                     songProgress += 10
                 },
                 colors = transparentColor,
-                contentPadding = PaddingValues(0.dp)
+                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.weight(1f)
             )
-            Text(currentSong?.duration?.timeStamp() ?: "..", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                currentSong?.duration?.timeStamp() ?: "..",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.End,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
