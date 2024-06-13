@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -69,6 +71,19 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
         }
     }
 
+    val transparentColor = ButtonColors(
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+        disabledContainerColor = Color.Transparent
+    )
+    val secondaryColor = ButtonColors(
+        containerColor = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
+        disabledContentColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
+        disabledContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+    )
+
     Column(
         modifier = Modifier.fillMaxWidth().weight(1f).padding(25.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -92,18 +107,6 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val transparentColor = ButtonColors(
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onBackground,
-                disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                disabledContainerColor = Color.Transparent
-            )
-            val secondaryColor = ButtonColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary,
-                disabledContentColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
-                disabledContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-            )
             Button(
                 content = { Icon(Icons.Rounded.Shuffle, "Shuffle") },
                 onClick = { shuffle = !shuffle },
@@ -157,6 +160,24 @@ val PlayScreen = NavScreen("Play", Icons.Rounded.PlayArrow,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(songProgress.toInt().timeStamp(), style = MaterialTheme.typography.bodyMedium)
+            Button(
+                content = { Icon(Icons.Rounded.History, "Rewind 10 seconds") },
+                onClick = {
+                    player.seekTo(songProgress.toInt() - 10)
+                    songProgress -= 10
+                },
+                colors = transparentColor,
+                contentPadding = PaddingValues(0.dp)
+            )
+            Button(
+                content = { Icon(Icons.Rounded.Update, "Skip 10 seconds") },
+                onClick = {
+                    player.seekTo(songProgress.toInt() + 10)
+                    songProgress += 10
+                },
+                colors = transparentColor,
+                contentPadding = PaddingValues(0.dp)
+            )
             Text(currentSong?.duration?.timeStamp() ?: "..", style = MaterialTheme.typography.bodyMedium)
         }
     }
